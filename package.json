@@ -1,5 +1,6 @@
 {
   "name": "coffee-connoisseur",
+  "description": "Discover coffee stores near you",
   "version": "0.1.0",
   "private": true,
   "scripts": {
