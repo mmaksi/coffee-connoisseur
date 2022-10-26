@@ -1,11 +1,20 @@
 import Head from "next/head";
 import Image from "next/image";
 import Banner from "../components/Banner";
+import Card from "../components/Card";
 import styles from "../styles/Home.module.css";
 
-export default function Home() {
+import coffeeStores from "../data/coffee-stores.json";
+
+export async function getStaticProps(context) {
+  return {
+    props: { coffeeStores },
+  }
+}
+
+export default function Home({ coffeeStores }) {
   const clickHandler = () => {
-    console.log("Banner");
+    console.log({ coffeeStores });
   };
 
   return (
@@ -20,6 +29,19 @@ export default function Home() {
         <Banner buttonText="View stores nearby" clickHandler={clickHandler} />
         <div className={styles.heroImage}>
           <Image src="/static/hero-image.png" width={700} height={400} />
+        </div>
+        <div className={styles.cardLayout}>
+          {coffeeStores.map(({ name, imgUrl, id }) => {
+            return (
+              <Card
+                key={id}
+                name={name}
+                imgUrl={imgUrl}
+                href={`/coffee-store/${id}`}
+                className={styles.card}
+              />
+            );
+          })}
         </div>
       </main>
 
