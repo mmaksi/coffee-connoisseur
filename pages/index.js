@@ -2,22 +2,24 @@ import Head from "next/head";
 import Image from "next/image";
 import Banner from "../components/Banner";
 import Card from "../components/Card";
+import { fetchCoffeeStores } from "../lib/coffee-stores";
 import styles from "../styles/Home.module.css";
-
-import coffeeStoresData from "../data/coffee-stores.json";
 
 // data will be stored in a CDN after the build process
 export async function getStaticProps() {
   // code in this function runs in the server only (safe)
+  const coffeeStores = await fetchCoffeeStores("coffee", "33.893582981652145%2C35.47158364033414");
+  console.log("coffeeStores server", coffeeStores);
+
   return {
     // passed as props to this page FC
-    props: { coffeeStores: coffeeStoresData },
+    props: { coffeeStores },
   };
 }
 
 export default function Home({ coffeeStores }) {
   const clickHandler = () => {
-    console.log({ coffeeStores });
+    // console.log({ coffeeStores });
   };
 
   return (
@@ -35,15 +37,15 @@ export default function Home({ coffeeStores }) {
         </div>
         {coffeeStores.length && (
           <>
-            <h2 className={styles.heading2}>Toronto Stores</h2>
+            <h2 className={styles.heading2}>Beirut Stores</h2>
             <div className={styles.cardLayout}>
-              {coffeeStores.map(({ name, imgUrl, id }) => {
+              {coffeeStores.map(({ name, imgUrl, fsq_id }) => {
                 return (
                   <Card
-                    key={id}
+                    key={fsq_id}
                     name={name}
                     imgUrl={imgUrl}
-                    href={`/coffee-store/${id}`}
+                    href={`/coffee-store/${fsq_id}`}
                     className={styles.card}
                   />
                 );
