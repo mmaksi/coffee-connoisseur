@@ -5,24 +5,32 @@ import styles from "../../styles/coffee-store.module.css";
 import cls from "classnames";
 
 import Image from "next/image";
-import { fetchCoffeeStores } from "../../lib/coffee-stores";
+import {
+  fetchCoffeeStores,
+} from "../../lib/coffee-stores";
 
 export async function getStaticProps({ params }) {
   const { storeId } = params;
-  const coffeeStores = await fetchCoffeeStores("coffee", "33.893582981652145%2C35.47158364033414");
+  const coffeeStoresResults = await fetchCoffeeStores(
+    "coffee",
+    "33.893582981652145%2C35.47158364033414"
+  );
 
   return {
     // passed as props to this page FC
     props: {
-      coffeeStore: coffeeStores.find(
+      coffeeStore: coffeeStoresResults.find(
         (coffeeStore) => coffeeStore.fsq_id === storeId
-      ),
+      )
     },
   };
 }
 
 export async function getStaticPaths() {
-  const coffeeStores = await fetchCoffeeStores("coffee", "33.893582981652145%2C35.47158364033414");
+  const coffeeStores = await fetchCoffeeStores(
+    "coffee",
+    "33.893582981652145%2C35.47158364033414"
+  );
   const paths = coffeeStores.map((coffeeStore) => {
     return {
       params: {
@@ -43,7 +51,6 @@ const CoffeeStore = ({ coffeeStore }) => {
   const router = useRouter();
   const { isFallback } = router; // Checks if route exists in getStaticPaths
   const { storeId } = router.query;
-
   if (isFallback) return <div>Loading...</div>;
 
   return (
@@ -56,7 +63,7 @@ const CoffeeStore = ({ coffeeStore }) => {
         <div className={styles.col1}>
           <div className={styles.backToHomeLink}>
             <Link href="/">
-              <a>Go Home</a>
+              <a>← Go Home</a>
             </Link>
           </div>
 
@@ -78,13 +85,19 @@ const CoffeeStore = ({ coffeeStore }) => {
         <div className={cls("glass", styles.col2)}>
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/places.svg" width={24} height={24} />
-            <p className={styles.text}>{coffeeStore.address}</p>
+            <p className={styles.text}>
+              {coffeeStore.location.formatted_address}
+            </p>
           </div>
 
-          <div className={styles.iconWrapper}>
-            <Image src="/static/icons/nearMe.svg" width={24} height={24} />
-            <p className={styles.text}>{coffeeStore.neighbourhood}</p>
-          </div>
+          {coffeeStore.location.related_places?.children.length && (
+            <div className={styles.iconWrapper}>
+              <Image src="/static/icons/nearMe.svg" width={24} height={24} />
+              <p className={styles.text}>
+                {coffeeStore.location?.related_places?.parent}
+              </p>
+            </div>
+          )}
 
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/star.svg" width={24} height={24} />

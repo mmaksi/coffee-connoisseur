@@ -2,14 +2,13 @@ import Head from "next/head";
 import Image from "next/image";
 import Banner from "../components/Banner";
 import Card from "../components/Card";
-import { fetchCoffeeStores } from "../lib/coffee-stores";
+import { fetchCoffeeStores, fetchCoffeeStoresImages } from "../lib/coffee-stores";
 import styles from "../styles/Home.module.css";
 
 // data will be stored in a CDN after the build process
 export async function getStaticProps() {
   // code in this function runs in the server only (safe)
   const coffeeStores = await fetchCoffeeStores("coffee", "33.893582981652145%2C35.47158364033414");
-  console.log("coffeeStores server", coffeeStores);
 
   return {
     // passed as props to this page FC
@@ -19,7 +18,7 @@ export async function getStaticProps() {
 
 export default function Home({ coffeeStores }) {
   const clickHandler = () => {
-    // console.log({ coffeeStores });
+    console.log({ coffeeStores });
   };
 
   return (
@@ -39,11 +38,12 @@ export default function Home({ coffeeStores }) {
           <>
             <h2 className={styles.heading2}>Beirut Stores</h2>
             <div className={styles.cardLayout}>
-              {coffeeStores.map(({ name, imgUrl, fsq_id }) => {
+              {coffeeStores.map(({ fsq_id, name, description, imgUrl }) => {
                 return (
                   <Card
                     key={fsq_id}
                     name={name}
+                    description={description}
                     imgUrl={imgUrl}
                     href={`/coffee-store/${fsq_id}`}
                     className={styles.card}
