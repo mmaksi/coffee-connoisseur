@@ -1,14 +1,18 @@
 import Head from "next/head";
 import Image from "next/image";
+import { useEffect } from "react";
 import Banner from "../components/Banner";
 import Card from "../components/Card";
-import { fetchCoffeeStores, fetchCoffeeStoresImages } from "../lib/coffee-stores";
+import { useTrackLocation } from "../hooks/useTrackLocation";
+import { fetchCoffeeStores } from "../lib/coffee-stores";
 import styles from "../styles/Home.module.css";
 
 // data will be stored in a CDN after the build process
 export async function getStaticProps() {
   // code in this function runs in the server only (safe)
-  const coffeeStores = await fetchCoffeeStores("coffee", "33.893582981652145%2C35.47158364033414");
+  const coffeeStores = await fetchCoffeeStores(
+    "33.893582981652145%2C35.47158364033414"
+  );
 
   return {
     // passed as props to this page FC
@@ -17,8 +21,24 @@ export async function getStaticProps() {
 }
 
 export default function Home({ coffeeStores }) {
+  const { handleTrackLocation, coords, locationErrorMsg, isLoading } =
+    useTrackLocation();
+
+  useEffect(() => {
+    async function fetchNearbyStores() {
+      try {
+        const coffeeStores = await fetchCoffeeStores(coords, "coffee", 30);
+        console.log({ coffeeStores });
+        return coffeeStores;
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchNearbyStores();
+  }, [coords]);
+
   const clickHandler = () => {
-    console.log({ coffeeStores });
+    handleTrackLocation();
   };
 
   return (
@@ -30,12 +50,16 @@ export default function Home({ coffeeStores }) {
       </Head>
 
       <main className={styles.main}>
-        <Banner buttonText="View stores nearby" clickHandler={clickHandler} />
+        <Banner
+          buttonText={isLoading ? "Locating..." : "View stores nearby"}
+          clickHandler={clickHandler}
+        />
+        {locationErrorMsg && <p>Something went wrong: {locationErrorMsg}</p>}
         <div className={styles.heroImage}>
           <Image src="/static/hero-image.png" width={700} height={400} />
         </div>
         {coffeeStores.length && (
-          <>
+          <div className={styles.sectionWrapper}>
             <h2 className={styles.heading2}>Beirut Stores</h2>
             <div className={styles.cardLayout}>
               {coffeeStores.map(({ fsq_id, name, description, imgUrl }) => {
@@ -51,7 +75,7 @@ export default function Home({ coffeeStores }) {
                 );
               })}
             </div>
-          </>
+          </div>
         )}
       </main>
 
