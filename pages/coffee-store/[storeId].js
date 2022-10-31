@@ -5,30 +5,29 @@ import styles from "../../styles/coffee-store.module.css";
 import cls from "classnames";
 
 import Image from "next/image";
-import {
-  fetchCoffeeStores,
-} from "../../lib/coffee-stores";
+import { fetchCoffeeStores } from "../../lib/coffee-stores";
 
 export async function getStaticProps({ params }) {
+  console.log("2");
   const { storeId } = params;
   const coffeeStoresResults = await fetchCoffeeStores(
-    "coffee",
     "33.893582981652145%2C35.47158364033414"
+  );
+  const foundStoresById = coffeeStoresResults.find(
+    (coffeeStore) => coffeeStore.fsq_id === storeId
   );
 
   return {
     // passed as props to this page FC
     props: {
-      coffeeStore: coffeeStoresResults.find(
-        (coffeeStore) => coffeeStore.fsq_id === storeId
-      )
+      coffeeStore: foundStoresById ? foundStoresById : {},
     },
   };
 }
 
 export async function getStaticPaths() {
+  console.log("3");
   const coffeeStores = await fetchCoffeeStores(
-    "coffee",
     "33.893582981652145%2C35.47158364033414"
   );
   const paths = coffeeStores.map((coffeeStore) => {
@@ -48,6 +47,7 @@ export async function getStaticPaths() {
 function handleUpvoteClick() {}
 
 const CoffeeStore = ({ coffeeStore }) => {
+  console.log("1");
   const router = useRouter();
   const { isFallback } = router; // Checks if route exists in getStaticPaths
   const { storeId } = router.query;

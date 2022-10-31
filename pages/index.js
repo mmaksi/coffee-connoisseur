@@ -1,10 +1,14 @@
 import Head from "next/head";
 import Image from "next/image";
-import { useEffect } from "react";
-import Banner from "../components/Banner";
 import Card from "../components/Card";
+import Banner from "../components/Banner";
+
+import { useContext, useEffect, useState } from "react";
 import { useTrackLocation } from "../hooks/useTrackLocation";
+
 import { fetchCoffeeStores } from "../lib/coffee-stores";
+import { StoreContext } from "../store/coffeeStores.context";
+import ACTION_TYPES from "../store/coffeeStores.types";
 import styles from "../styles/Home.module.css";
 
 // data will be stored in a CDN after the build process
@@ -21,21 +25,31 @@ export async function getStaticProps() {
 }
 
 export default function Home({ coffeeStores }) {
-  const { handleTrackLocation, coords, locationErrorMsg, isLoading } =
+  const { handleTrackLocation, locationErrorMsg, isLoading } =
     useTrackLocation();
+
+  const [coffeeStoreError, setCoffeeStoreError] = useState(null)
+
+  const { dispatch, state } = useContext(StoreContext)
 
   useEffect(() => {
     async function fetchNearbyStores() {
       try {
-        const coffeeStores = await fetchCoffeeStores(coords, "coffee", 30);
-        console.log({ coffeeStores });
+        const coffeeStores = await fetchCoffeeStores(state.coords, "coffee", 30);
+        if (coffeeStores !== undefined) {
+          dispatch({
+            type: ACTION_TYPES.SET_COFFEE_STORES,
+            payload: coffeeStores
+          })
+        }
         return coffeeStores;
       } catch (error) {
+        setCoffeeStoreError(error.message)
         console.log(error);
       }
     }
     fetchNearbyStores();
-  }, [coords]);
+  }, [state.coords]);
 
   const clickHandler = () => {
     handleTrackLocation();
@@ -55,10 +69,32 @@ export default function Home({ coffeeStores }) {
           clickHandler={clickHandler}
         />
         {locationErrorMsg && <p>Something went wrong: {locationErrorMsg}</p>}
+        {coffeeStoreError && <p>Something went wrong: {coffeeStoreError}</p>}
         <div className={styles.heroImage}>
           <Image src="/static/hero-image.png" width={700} height={400} />
         </div>
-        {coffeeStores.length && (
+
+        {state.coffeeStores.length > 0 && (
+          <div className={styles.sectionWrapper}>
+            <h2 className={styles.heading2}>Stores Near Me</h2>
+            <div className={styles.cardLayout}>
+              {state.coffeeStores.map(({ fsq_id, name, description, imgUrl }) => {
+                return (
+                  <Card
+                    key={fsq_id}
+                    name={name}
+                    description={description}
+                    imgUrl={imgUrl}
+                    href={`/coffee-store/${fsq_id}`}
+                    className={styles.card}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {coffeeStores.length > 0 && (
           <div className={styles.sectionWrapper}>
             <h2 className={styles.heading2}>Beirut Stores</h2>
             <div className={styles.cardLayout}>
