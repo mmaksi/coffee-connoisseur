@@ -3,4 +3,4 @@ const ACTION_TYPES = {
   SET_COFFEE_STORES: "SET_COFFEE_STORES",
 };
 
-export default ACTION_TYPES
+export default ACTION_TYPES;

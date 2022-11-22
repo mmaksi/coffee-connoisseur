@@ -6,9 +6,10 @@ import cls from "classnames";
 
 import Image from "next/image";
 import { fetchCoffeeStores } from "../../lib/coffee-stores";
+import { useContext } from "react";
+import { StoreContext } from "../../store/coffeeStores.context";
 
 export async function getStaticProps({ params }) {
-  console.log("2");
   const { storeId } = params;
   const coffeeStoresResults = await fetchCoffeeStores(
     "33.893582981652145%2C35.47158364033414"
@@ -26,7 +27,6 @@ export async function getStaticProps({ params }) {
 }
 
 export async function getStaticPaths() {
-  console.log("3");
   const coffeeStores = await fetchCoffeeStores(
     "33.893582981652145%2C35.47158364033414"
   );
@@ -47,11 +47,12 @@ export async function getStaticPaths() {
 function handleUpvoteClick() {}
 
 const CoffeeStore = ({ coffeeStore }) => {
-  console.log("1");
   const router = useRouter();
   const { isFallback } = router; // Checks if route exists in getStaticPaths
   const { storeId } = router.query;
   if (isFallback) return <div>Loading...</div>;
+
+  const { state: coffeeStores } = useContext(StoreContext);
 
   return (
     <div className={styles.layout}>

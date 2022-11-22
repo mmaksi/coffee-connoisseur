@@ -5,16 +5,15 @@ import ACTION_TYPES from "../store/coffeeStores.types";
 export const useTrackLocation = () => {
   const [locationErrorMsg, setLocationErrorMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { dispatch } = useContext(StoreContext)
+  const { dispatch } = useContext(StoreContext);
 
   function success(position) {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
-
     dispatch({
       type: ACTION_TYPES.SET_COORDS,
-      payload: `${latitude}%2C${longitude}`
-    })
+      payload: `${latitude}%2C${longitude}`,
+    });
     setLocationErrorMsg("");
     setIsLoading(false);
   }

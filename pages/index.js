@@ -13,11 +13,9 @@ import styles from "../styles/Home.module.css";
 
 // data will be stored in a CDN after the build process
 export async function getStaticProps() {
-  // code in this function runs in the server only (safe)
   const coffeeStores = await fetchCoffeeStores(
     "33.893582981652145%2C35.47158364033414"
   );
-
   return {
     // passed as props to this page FC
     props: { coffeeStores },
@@ -28,23 +26,29 @@ export default function Home({ coffeeStores }) {
   const { handleTrackLocation, locationErrorMsg, isLoading } =
     useTrackLocation();
 
-  const [coffeeStoreError, setCoffeeStoreError] = useState(null)
-
-  const { dispatch, state } = useContext(StoreContext)
+  /**
+   * When current location changes (clicking on View Nearby button)
+   * new stores will be fetched and published to the page
+   */
+  const { state, dispatch } = useContext(StoreContext);
+  const [coffeeStoreError, setCoffeeStoreError] = useState(null);
 
   useEffect(() => {
+    console.log("running once on load");
     async function fetchNearbyStores() {
       try {
-        const coffeeStores = await fetchCoffeeStores(state.coords, "coffee", 30);
-        if (coffeeStores !== undefined) {
+        const coffeeStores = await fetchCoffeeStores(state.coords);
+
+        if (coffeeStores.length) {
+          console.log("running twice on load");
           dispatch({
             type: ACTION_TYPES.SET_COFFEE_STORES,
-            payload: coffeeStores
-          })
+            payload: coffeeStores,
+          });
         }
         return coffeeStores;
       } catch (error) {
-        setCoffeeStoreError(error.message)
+        setCoffeeStoreError(error.message);
         console.log(error);
       }
     }
@@ -78,18 +82,20 @@ export default function Home({ coffeeStores }) {
           <div className={styles.sectionWrapper}>
             <h2 className={styles.heading2}>Stores Near Me</h2>
             <div className={styles.cardLayout}>
-              {state.coffeeStores.map(({ fsq_id, name, description, imgUrl }) => {
-                return (
-                  <Card
-                    key={fsq_id}
-                    name={name}
-                    description={description}
-                    imgUrl={imgUrl}
-                    href={`/coffee-store/${fsq_id}`}
-                    className={styles.card}
-                  />
-                );
-              })}
+              {state.coffeeStores.map(
+                ({ fsq_id, name, description, imgUrl }) => {
+                  return (
+                    <Card
+                      key={fsq_id}
+                      name={name}
+                      description={description}
+                      imgUrl={imgUrl}
+                      href={`/coffee-store/${fsq_id}`}
+                      className={styles.card}
+                    />
+                  );
+                }
+              )}
             </div>
           </div>
         )}
