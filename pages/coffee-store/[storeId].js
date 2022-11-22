@@ -6,22 +6,23 @@ import cls from "classnames";
 
 import Image from "next/image";
 import { fetchCoffeeStores } from "../../lib/coffee-stores";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { StoreContext } from "../../store/coffeeStores.context";
+import { isEmpty } from "../../utils/index.utils";
 
-export async function getStaticProps({ params }) {
-  const { storeId } = params;
-  const coffeeStoresResults = await fetchCoffeeStores(
+export async function getStaticProps(staticProps) {
+  const params = staticProps.params;
+  const coffeeStores = await fetchCoffeeStores(
     "33.893582981652145%2C35.47158364033414"
   );
-  const foundStoresById = coffeeStoresResults.find(
-    (coffeeStore) => coffeeStore.fsq_id === storeId
+  const foundStoreById = coffeeStores.find(
+    (coffeeStore) => coffeeStore.fsq_id === params.storeId
   );
 
   return {
     // passed as props to this page FC
     props: {
-      coffeeStore: foundStoresById ? foundStoresById : {},
+      coffeeStore: foundStoreById ? foundStoreById : {},
     },
   };
 }
@@ -46,13 +47,30 @@ export async function getStaticPaths() {
 
 function handleUpvoteClick() {}
 
-const CoffeeStore = ({ coffeeStore }) => {
+const CoffeeStore = (initialProps) => {
   const router = useRouter();
   const { isFallback } = router; // Checks if route exists in getStaticPaths
   const { storeId } = router.query;
   if (isFallback) return <div>Loading...</div>;
 
-  const { state: coffeeStores } = useContext(StoreContext);
+  const [coffeeStore, setCoffeeStore] = useState(initialProps.coffeeStore);
+
+  const {
+    state: { coffeeStores },
+  } = useContext(StoreContext);
+
+  useEffect(() => {
+    if (isEmpty(initialProps.coffeeStore)) {
+      if (coffeeStores.length > 0) {
+        const foundStoreById = coffeeStores.find(
+          (coffeeStore) => coffeeStore.fsq_id === storeId
+        );
+        setCoffeeStore(foundStoreById);
+      }
+    }
+  });
+
+  console.log(coffeeStore);
 
   return (
     <div className={styles.layout}>
@@ -87,11 +105,11 @@ const CoffeeStore = ({ coffeeStore }) => {
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/places.svg" width={24} height={24} />
             <p className={styles.text}>
-              {coffeeStore.location.formatted_address}
+              {coffeeStore.location?.formatted_address}
             </p>
           </div>
 
-          {coffeeStore.location.related_places?.children.length && (
+          {coffeeStore.location?.related_places?.children.length && (
             <div className={styles.iconWrapper}>
               <Image src="/static/icons/nearMe.svg" width={24} height={24} />
               <p className={styles.text}>
