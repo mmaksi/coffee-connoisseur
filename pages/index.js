@@ -39,6 +39,12 @@ export default function Home({ coffeeStores }) {
       try {
         const coffeeStores = await fetchCoffeeStores(state.coords);
 
+        // const res = await fetch(
+        //   `/api/getCoffeeStoreByLocation?coords=${state.coords}?query=coffee?limit=3`
+        // );
+        // const coffeeStoress = await res.json();
+        // console.log(coffeeStoress);
+
         if (coffeeStores.length) {
           console.log("running twice on load");
           dispatch({
