@@ -15,14 +15,14 @@ export async function getStaticProps(staticProps) {
   const coffeeStores = await fetchCoffeeStores(
     "33.893582981652145%2C35.47158364033414"
   );
-  const foundStoreById = coffeeStores.find(
+  const contextCoffeeStore = coffeeStores.find(
     (coffeeStore) => coffeeStore.fsq_id === params.storeId
   );
 
   return {
     // passed as props to this page FC
     props: {
-      coffeeStore: foundStoreById ? foundStoreById : {},
+      coffeeStore: contextCoffeeStore ? contextCoffeeStore : {},
     },
   };
 }
@@ -59,16 +59,48 @@ const CoffeeStore = (initialProps) => {
     state: { coffeeStores },
   } = useContext(StoreContext);
 
+  const handleCreateCoffeeStore = async (coffeeStore) => {
+    try {
+      const { fsq_id: id, name, location, imgUrl, neighbourhood } = coffeeStore;
+
+      const response = fetch("/api/createCoffeeStore", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+          name,
+          address: location.address || "",
+          voting: 0,
+          imgUrl,
+          neighbourhood: neighbourhood || "",
+        }),
+      });
+      const dbCoffeeStore = response.json();
+    } catch (error) {
+      console.log(`Error creating coffee store`, error);
+    }
+  };
+
   useEffect(() => {
     if (isEmpty(initialProps.coffeeStore)) {
+      // data from Context
       if (coffeeStores.length > 0) {
-        const foundStoreById = coffeeStores.find(
+        const contextCoffeeStore = coffeeStores.find(
           (coffeeStore) => coffeeStore.fsq_id === storeId
         );
-        setCoffeeStore(foundStoreById);
+
+        if (contextCoffeeStore) {
+          setCoffeeStore(contextCoffeeStore);
+          handleCreateCoffeeStore(contextCoffeeStore);
+        }
       }
+    } else {
+      // data from SSG
+      handleCreateCoffeeStore(initialProps.coffeeStore);
     }
-  });
+  }, [storeId, initialProps, initialProps.coffeeStore]);
 
   return (
     <div className={styles.layout}>
