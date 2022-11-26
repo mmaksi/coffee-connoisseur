@@ -45,8 +45,6 @@ export async function getStaticPaths() {
   };
 }
 
-function handleUpvoteClick() {}
-
 const CoffeeStore = (initialProps) => {
   const router = useRouter();
   const { isFallback } = router; // Checks if route exists in getStaticPaths
@@ -54,10 +52,35 @@ const CoffeeStore = (initialProps) => {
   if (isFallback) return <div>Loading...</div>;
 
   const [coffeeStore, setCoffeeStore] = useState(initialProps.coffeeStore);
+  const [vote, setVote] = useState(0);
 
   const {
     state: { coffeeStores },
   } = useContext(StoreContext);
+
+  useEffect(() => {
+    if (isEmpty(initialProps.coffeeStore)) {
+      console.log("Running now......");
+      // data from Context
+      if (coffeeStores.length > 0) {
+        const contextCoffeeStore = coffeeStores.find(
+          (coffeeStore) => coffeeStore.fsq_id === storeId
+        );
+
+        if (contextCoffeeStore) {
+          setCoffeeStore(contextCoffeeStore);
+          handleCreateCoffeeStore(contextCoffeeStore);
+        }
+      }
+    } else {
+      // data from SSG
+      handleCreateCoffeeStore(initialProps.coffeeStore);
+    }
+  }, [storeId, initialProps, initialProps.coffeeStore]);
+
+  function handleUpvoteClick() {
+    setVote((prevCount) => prevCount + 1);
+  }
 
   const handleCreateCoffeeStore = async (coffeeStore) => {
     try {
@@ -77,30 +100,11 @@ const CoffeeStore = (initialProps) => {
           neighbourhood: neighbourhood || "",
         }),
       });
-      const dbCoffeeStore = response.json();
+      // const dbCoffeeStore = response.json();
     } catch (error) {
       console.log(`Error creating coffee store`, error);
     }
   };
-
-  useEffect(() => {
-    if (isEmpty(initialProps.coffeeStore)) {
-      // data from Context
-      if (coffeeStores.length > 0) {
-        const contextCoffeeStore = coffeeStores.find(
-          (coffeeStore) => coffeeStore.fsq_id === storeId
-        );
-
-        if (contextCoffeeStore) {
-          setCoffeeStore(contextCoffeeStore);
-          handleCreateCoffeeStore(contextCoffeeStore);
-        }
-      }
-    } else {
-      // data from SSG
-      handleCreateCoffeeStore(initialProps.coffeeStore);
-    }
-  }, [storeId, initialProps, initialProps.coffeeStore]);
 
   return (
     <div className={styles.layout}>
@@ -122,7 +126,7 @@ const CoffeeStore = (initialProps) => {
 
           <div className={styles.storeImgWrapper}>
             <Image
-              src={coffeeStore.imgUrl}
+              src={coffeeStore.imgUrl || ""}
               width={600}
               height={360}
               className={styles.storeImg}
@@ -150,7 +154,7 @@ const CoffeeStore = (initialProps) => {
 
           <div className={styles.iconWrapper}>
             <Image src="/static/icons/star.svg" width={24} height={24} />
-            <p className={styles.text}>10</p>
+            <p className={styles.text}>{vote}</p>
           </div>
 
           <button className={styles.upvoteButton} onClick={handleUpvoteClick}>

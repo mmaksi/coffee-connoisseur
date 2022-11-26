@@ -1,6 +1,8 @@
 import { createContext, useContext, useReducer } from "react";
 import { storeReducer } from "./coffeeStores.reducer";
 
+console.log("Context running twice");
+
 const initialState = {
   coords: "",
   coffeeStores: [],

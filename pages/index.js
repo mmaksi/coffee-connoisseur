@@ -34,28 +34,28 @@ export default function Home({ coffeeStores }) {
   const [coffeeStoreError, setCoffeeStoreError] = useState(null);
 
   useEffect(() => {
-    console.log("running once on load");
     async function fetchNearbyStores() {
-      try {
-        const coffeeStores = await fetchCoffeeStores(state.coords);
+      if (state.coords) {
+        try {
+          const coffeeStores = await fetchCoffeeStores(state.coords);
 
-        // const res = await fetch(
-        //   `/api/getCoffeeStoreByLocation?coords=${state.coords}?query=coffee?limit=3`
-        // );
-        // const coffeeStoress = await res.json();
-        // console.log(coffeeStoress);
+          // const res = await fetch(
+          //   `/api/getCoffeeStoreByLocation?coords=${state.coords}?query=coffee?limit=3`
+          // );
+          // const coffeeStoress = await res.json();
+          // console.log(coffeeStoress);
 
-        if (coffeeStores.length) {
-          console.log("running twice on load");
-          dispatch({
-            type: ACTION_TYPES.SET_COFFEE_STORES,
-            payload: coffeeStores,
-          });
+          if (coffeeStores.length) {
+            dispatch({
+              type: ACTION_TYPES.SET_COFFEE_STORES,
+              payload: coffeeStores,
+            });
+          }
+          return coffeeStores;
+        } catch (error) {
+          setCoffeeStoreError(error.message);
+          console.log(error);
         }
-        return coffeeStores;
-      } catch (error) {
-        setCoffeeStoreError(error.message);
-        console.log(error);
       }
     }
     fetchNearbyStores();
