@@ -70,8 +70,6 @@ const CoffeeStore = (initialProps) => {
     }
   });
 
-  console.log(coffeeStore);
-
   return (
     <div className={styles.layout}>
       <Head>
